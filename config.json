@@ -1,0 +1,18 @@
+
+{
+  "debug": true,
+  "server": {
+    "address": ":9090"
+  },
+  "context":{
+    "timeout":2
+  },
+  "database": {
+    "host": "localhost",
+    "port": "32773",
+    "user": "root",
+    "pass": "EulerIsCool+42",
+    "name": "member"
+  }
+
+}
