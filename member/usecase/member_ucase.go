@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/mascot27/cleanApiRepoPattern/member"
 	"github.com/mascot27/cleanApiRepoPattern/models"
+	"strconv"
 	"time"
 )
 
@@ -14,6 +15,30 @@ type memberUsecase struct {
 
 func NewMemberUsecase(memberRepos member.MemberRepository, contextTimeout time.Duration) *memberUsecase {
 	return &memberUsecase{memberRepos: memberRepos, contextTimeout: contextTimeout}
+}
+
+func (m *memberUsecase) Fetch(c context.Context, cursor string, num int64) ([]*models.Member, string, error) {
+	if num == 0 {
+		num = 10
+	}
+
+	ctx, cancel := context.WithTimeout(c, m.contextTimeout)
+	defer cancel()
+
+	listMember, err := m.memberRepos.Fetch(ctx, cursor, num)
+	if err != nil {
+		return nil, "", err
+	}
+
+	nextCursor := ""
+
+	if size := len(listMember); size == int(num) {
+		lastId := listMember[num-1].ID
+		nextCursor = strconv.Itoa(int(lastId))
+	}
+
+	return listMember, nextCursor, nil
+
 }
 
 func (m *memberUsecase) GetByID(c context.Context, id int64) (*models.Member, error) {

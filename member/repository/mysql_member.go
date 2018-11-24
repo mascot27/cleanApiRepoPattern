@@ -15,8 +15,41 @@ type mysqlMemberRepository struct {
 	Conn *sql.DB
 }
 
+func (m *mysqlMemberRepository) fetch(ctx context.Context, query string, args ...interface{}) ([]*models.Member, error) {
+
+	rows, err := m.Conn.QueryContext(ctx, query, args...)
+
+	if err != nil {
+		logrus.Error(err)
+		return nil, err
+	}
+	defer rows.Close()
+	result := make([]*models.Member, 0)
+	for rows.Next() {
+		t := new(models.Member)
+		err = rows.Scan(
+			&t.ID,
+			&t.Name,
+		)
+
+		if err != nil {
+			logrus.Error(err)
+			return nil, err
+		}
+		result = append(result, t)
+	}
+
+	return result, nil
+}
+
 func NewMysqlMemberRepository(conn *sql.DB) *mysqlMemberRepository {
 	return &mysqlMemberRepository{Conn: conn}
+}
+
+func (m *mysqlMemberRepository) Fetch(ctx context.Context, cursor string, num int64) ([]*models.Member, error) {
+	query := `SELECT id,name FROM member WHERE ID > ? LIMIT ?`
+
+	return m.fetch(ctx, query, cursor, num)
 }
 
 func (m *mysqlMemberRepository) GetByID(ctx context.Context, id int64) (*models.Member, error) {
@@ -75,31 +108,4 @@ func (m *mysqlMemberRepository) Delete(ctx context.Context, id int64) (bool, err
 	}
 
 	return true, nil
-}
-
-func (m *mysqlMemberRepository) fetch(ctx context.Context, query string, args ...interface{}) ([]*models.Member, error) {
-
-	rows, err := m.Conn.QueryContext(ctx, query, args...)
-
-	if err != nil {
-		logrus.Error(err)
-		return nil, err
-	}
-	defer rows.Close()
-	result := make([]*models.Member, 0)
-	for rows.Next() {
-		t := new(models.Member)
-		err = rows.Scan(
-			&t.ID,
-			&t.Name,
-		)
-
-		if err != nil {
-			logrus.Error(err)
-			return nil, err
-		}
-		result = append(result, t)
-	}
-
-	return result, nil
 }
