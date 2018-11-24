@@ -1,8 +1,9 @@
 package main
 
-import(
+import (
 	"database/sql"
 	"fmt"
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/labstack/echo"
 	"github.com/mascot27/cleanApiRepoPattern/middleware"
 	"github.com/spf13/viper"
@@ -10,14 +11,13 @@ import(
 	"net/url"
 	"os"
 	"time"
-	_ "github.com/go-sql-driver/mysql"
 
+	memberHttpDeliver "github.com/mascot27/cleanApiRepoPattern/member/delivery/http"
 	memberRepo "github.com/mascot27/cleanApiRepoPattern/member/repository"
 	memberUcase "github.com/mascot27/cleanApiRepoPattern/member/usecase"
-	memberHttpDeliver "github.com/mascot27/cleanApiRepoPattern/member/delivery/http"
 )
 
-func init(){
+func init() {
 	viper.SetConfigFile("config.json")
 	err := viper.ReadInConfig()
 	if err != nil {
@@ -39,7 +39,7 @@ func main() {
 
 	val := url.Values{}
 	val.Add("parseTime", "1")
-	val.Add("loc", "Asia/Jakarta")
+	val.Add("loc", "Europe/Paris")
 	dsn := fmt.Sprintf("%s?%s", connection, val.Encode())
 	dbConn, err := sql.Open(`mysql`, dsn)
 	if err != nil && viper.GetBool("debug") {

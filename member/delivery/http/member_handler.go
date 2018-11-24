@@ -2,13 +2,13 @@ package http
 
 import (
 	"context"
-	memberUcase "github.com/mascot27/cleanApiRepoPattern/member"
 	"github.com/labstack/echo"
+	memberUcase "github.com/mascot27/cleanApiRepoPattern/member"
 	models "github.com/mascot27/cleanApiRepoPattern/models"
 	"github.com/sirupsen/logrus"
+	validator "gopkg.in/go-playground/validator.v9"
 	"net/http"
 	"strconv"
-	validator "gopkg.in/go-playground/validator.v9"
 )
 
 type ResponseError struct {
@@ -19,7 +19,7 @@ type HttpMemberHandler struct {
 	MUsecase memberUcase.MemberUsecase
 }
 
-func(m *HttpMemberHandler) GetByID(c echo.Context) error {
+func (m *HttpMemberHandler) GetByID(c echo.Context) error {
 	idP, err := strconv.Atoi(c.Param("id"))
 	id := int64(idP)
 
@@ -28,7 +28,7 @@ func(m *HttpMemberHandler) GetByID(c echo.Context) error {
 		ctx = context.Background()
 	}
 
-	art, err := m.MUsecase.GetById(ctx, id)
+	art, err := m.MUsecase.GetByID(ctx, id)
 
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
@@ -45,7 +45,6 @@ func isRequestValid(m *models.Member) (bool, error) {
 	}
 	return true, nil
 }
-
 
 func (m *HttpMemberHandler) Store(c echo.Context) error {
 	var member models.Member
@@ -70,6 +69,23 @@ func (m *HttpMemberHandler) Store(c echo.Context) error {
 	return c.JSON(http.StatusCreated, ar)
 }
 
+func (m *HttpMemberHandler) Delete(c echo.Context) error {
+	idP, err := strconv.Atoi(c.Param("id"))
+	id := int64(idP)
+	ctx := c.Request().Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	_, err = m.MUsecase.Delete(ctx, id)
+
+	if err != nil {
+		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+	}
+
+	return c.NoContent(http.StatusNoContent)
+}
+
 func getStatusCode(err error) int {
 
 	if err == nil {
@@ -90,12 +106,11 @@ func getStatusCode(err error) int {
 	}
 }
 
-
 func NewMemberHttpHandler(e *echo.Echo, us memberUcase.MemberUsecase) {
 	handler := &HttpMemberHandler{
 		MUsecase: us,
 	}
 	e.POST("/member", handler.Store)
 	e.GET("/member/:id", handler.GetByID)
-
+	e.DELETE("/member/:id", handler.Delete)
 }

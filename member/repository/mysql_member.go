@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"fmt"
 
 	"github.com/sirupsen/logrus"
 
@@ -18,8 +19,8 @@ func NewMysqlMemberRepository(conn *sql.DB) *mysqlMemberRepository {
 	return &mysqlMemberRepository{Conn: conn}
 }
 
-func (m *mysqlMemberRepository) GetById(ctx context.Context, id int64) (*models.Member, error) {
-	query := `SELECT id, name FROM article WHERE ID = ?`
+func (m *mysqlMemberRepository) GetByID(ctx context.Context, id int64) (*models.Member, error) {
+	query := `SELECT id, name FROM member WHERE ID = ?`
 
 	list, err := m.fetch(ctx, query, id)
 	if err != nil {
@@ -52,6 +53,29 @@ func (m *mysqlMemberRepository) Store(ctx context.Context, newMember *models.Mem
 	return res.LastInsertId()
 }
 
+func (m *mysqlMemberRepository) Delete(ctx context.Context, id int64) (bool, error) {
+	query := "DELETE FROM member WHERE id = ?"
+
+	stmt, err := m.Conn.PrepareContext(ctx, query)
+	if err != nil {
+		return false, err
+	}
+	res, err := stmt.ExecContext(ctx, id)
+	if err != nil {
+		return false, err
+	}
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		return false, err
+	}
+	if rowsAffected != 1 {
+		err = fmt.Errorf("Weird  Behaviour. Total Affected: %d", rowsAffected)
+		logrus.Error(err)
+		return false, err
+	}
+
+	return true, nil
+}
 
 func (m *mysqlMemberRepository) fetch(ctx context.Context, query string, args ...interface{}) ([]*models.Member, error) {
 
@@ -79,6 +103,3 @@ func (m *mysqlMemberRepository) fetch(ctx context.Context, query string, args ..
 
 	return result, nil
 }
-
-
-

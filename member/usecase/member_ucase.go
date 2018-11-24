@@ -16,27 +16,36 @@ func NewMemberUsecase(memberRepos member.MemberRepository, contextTimeout time.D
 	return &memberUsecase{memberRepos: memberRepos, contextTimeout: contextTimeout}
 }
 
-func(m *memberUsecase) GetById(c context.Context, id int64)(*models.Member, error){
+func (m *memberUsecase) GetByID(c context.Context, id int64) (*models.Member, error) {
 	ctx, cancel := context.WithTimeout(c, m.contextTimeout)
 	defer cancel()
 
-	res, err := m.memberRepos.GetById(ctx, id)
+	res, err := m.memberRepos.GetByID(ctx, id)
 	if err != nil {
 		return nil, err
 	}
 	return res, nil
 }
 
-func(m *memberUsecase) Store(c context.Context, newUser *models.Member) (*models.Member, error){
+func (m *memberUsecase) Store(c context.Context, newUser *models.Member) (*models.Member, error) {
 	ctx, cancel := context.WithTimeout(c, m.contextTimeout)
 	defer cancel()
 
-	// TODO: check if member already exist and return CONFLICT_ERROR in case
 	id, err := m.memberRepos.Store(ctx, newUser)
 	if err != nil {
 		return nil, err
 	}
 
-	newUser.ID = id;
+	newUser.ID = id
 	return newUser, nil
+}
+
+func (m *memberUsecase) Delete(c context.Context, id int64) (bool, error) {
+	ctx, cancel := context.WithTimeout(c, m.contextTimeout)
+	defer cancel()
+	existedArticle, _ := m.memberRepos.GetByID(ctx, id)
+	if existedArticle == nil {
+		return false, models.NOT_FOUND_ERROR
+	}
+	return m.memberRepos.Delete(ctx, id)
 }

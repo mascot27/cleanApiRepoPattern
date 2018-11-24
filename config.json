@@ -9,7 +9,7 @@
   },
   "database": {
     "host": "localhost",
-    "port": "32773",
+    "port": "32768",
     "user": "root",
     "pass": "EulerIsCool+42",
     "name": "member"
