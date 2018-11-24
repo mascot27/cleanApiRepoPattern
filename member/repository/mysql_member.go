@@ -28,8 +28,9 @@ func (m *mysqlMemberRepository) fetch(ctx context.Context, query string, args ..
 	for rows.Next() {
 		t := new(models.Member)
 		err = rows.Scan(
-			&t.ID,
+			&t.PublicId,
 			&t.Name,
+			&t.Guid,
 		)
 
 		if err != nil {
@@ -47,13 +48,13 @@ func NewMysqlMemberRepository(conn *sql.DB) *mysqlMemberRepository {
 }
 
 func (m *mysqlMemberRepository) Fetch(ctx context.Context, cursor string, num int64) ([]*models.Member, error) {
-	query := `SELECT id,name FROM member WHERE ID > ? LIMIT ?`
+	query := `SELECT PublicId,name,Guid FROM member WHERE PublicId > ? LIMIT ?`
 
 	return m.fetch(ctx, query, cursor, num)
 }
 
 func (m *mysqlMemberRepository) GetByID(ctx context.Context, id int64) (*models.Member, error) {
-	query := `SELECT id, name FROM member WHERE ID = ?`
+	query := `SELECT PublicId, name, GUID FROM member WHERE ID = ?`
 
 	list, err := m.fetch(ctx, query, id)
 	if err != nil {
@@ -71,14 +72,14 @@ func (m *mysqlMemberRepository) GetByID(ctx context.Context, id int64) (*models.
 }
 
 func (m *mysqlMemberRepository) Store(ctx context.Context, newMember *models.Member) (int64, error) {
-	query := `INSERT  member SET ID=? , Name=? `
+	query := `INSERT  member SET PublicId=? , Name=?, GUID=?`
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {
 
 		return 0, err
 	}
 
-	res, err := stmt.ExecContext(ctx, newMember.ID, newMember.Name)
+	res, err := stmt.ExecContext(ctx, newMember.PublicId, newMember.Name, newMember.Guid)
 	if err != nil {
 
 		return 0, err
@@ -87,7 +88,7 @@ func (m *mysqlMemberRepository) Store(ctx context.Context, newMember *models.Mem
 }
 
 func (m *mysqlMemberRepository) Delete(ctx context.Context, id int64) (bool, error) {
-	query := "DELETE FROM member WHERE id = ?"
+	query := "DELETE FROM member WHERE PublicId = ?"
 
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {

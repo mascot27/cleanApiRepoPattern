@@ -1,6 +1,7 @@
 package models
 
 type Member struct {
-	ID   int64  `json:"id"`
-	Name string `json:"name"`
+	PublicId int64  `json:"id"`
+	Name     string `json:"name"`
+	Guid     string `json:"guid"`
 }

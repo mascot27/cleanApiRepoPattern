@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/mascot27/cleanApiRepoPattern/member"
 	"github.com/mascot27/cleanApiRepoPattern/models"
+	"github.com/segmentio/ksuid"
 	"strconv"
 	"time"
 )
@@ -33,7 +34,7 @@ func (m *memberUsecase) Fetch(c context.Context, cursor string, num int64) ([]*m
 	nextCursor := ""
 
 	if size := len(listMember); size == int(num) {
-		lastId := listMember[num-1].ID
+		lastId := listMember[num-1].PublicId
 		nextCursor = strconv.Itoa(int(lastId))
 	}
 
@@ -56,12 +57,14 @@ func (m *memberUsecase) Store(c context.Context, newUser *models.Member) (*model
 	ctx, cancel := context.WithTimeout(c, m.contextTimeout)
 	defer cancel()
 
+	guidGenerated := ksuid.New()
+	newUser.Guid = guidGenerated.String()
+
 	id, err := m.memberRepos.Store(ctx, newUser)
 	if err != nil {
 		return nil, err
 	}
-
-	newUser.ID = id
+	newUser.PublicId = id
 	return newUser, nil
 }
 

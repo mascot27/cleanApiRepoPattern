@@ -7,7 +7,8 @@
   "context":{
     "timeout":2
   },
-  "database": {
+  "database_type": "mysql",
+  "database_mysql": {
     "host": "localhost",
     "port": "32768",
     "user": "root",
