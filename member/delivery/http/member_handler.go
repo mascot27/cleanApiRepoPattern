@@ -76,12 +76,12 @@ func (m *HttpMemberHandler) GetByID(c echo.Context) error {
 		ctx = context.Background()
 	}
 
-	art, err := m.MUsecase.GetByID(ctx, id)
+	memb, err := m.MUsecase.GetByID(ctx, id)
 
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
-	return c.JSON(http.StatusOK, art)
+	return c.JSON(http.StatusOK, memb)
 }
 
 func (m *HttpMemberHandler) Store(c echo.Context) error {
@@ -99,12 +99,12 @@ func (m *HttpMemberHandler) Store(c echo.Context) error {
 		ctx = context.Background()
 	}
 
-	ar, err := m.MUsecase.Store(ctx, &member)
+	memb, err := m.MUsecase.Store(ctx, &member)
 
 	if err != nil {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
-	return c.JSON(http.StatusCreated, ar)
+	return c.JSON(http.StatusCreated, memb)
 }
 
 func (m *HttpMemberHandler) Delete(c echo.Context) error {
